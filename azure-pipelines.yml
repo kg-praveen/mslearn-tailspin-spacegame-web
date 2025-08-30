@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: potential guacamole
+  vmImage: ubuntu-latest
 
 variables:
   buildConfiguration: 'Release'
