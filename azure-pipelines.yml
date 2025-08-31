@@ -13,18 +13,5 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: UseDotNet@2
-  displayName: 'Install .NET 8 SDK'
-  inputs:
-    packageType: 'sdk'
-    version: '8.x'         # or pin e.g. 8.0.404
-    includePreview: false
-
-- script: dotnet --info
-  displayName: 'Dotnet info (sanity check)'
-
-- script: dotnet restore
-  displayName: 'dotnet restore'
-
-- script: dotnet build --configuration Release --no-restore
-  displayName: 'dotnet build Release'
+- script: dotnet build --configuration $(buildConfiguration)
+  displayName: 'dotnet build $(buildConfiguration)'
