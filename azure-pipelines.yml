@@ -1,6 +1,5 @@
 # ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
+# Build and test ASP.NET Core projects targeting .NET.
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 trigger:
@@ -13,46 +12,53 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+# Install .NET 8 SDK
 - task: UseDotNet@2
   displayName: 'Install .NET 8 SDK'
   inputs:
     packageType: 'sdk'
-    version: '8.x'         # or pin e.g. 8.0.404
+    version: '8.x'
     includePreview: false
 
+# Quick sanity check on the agent
 - script: dotnet --info
   displayName: 'Dotnet info (sanity check)'
 
-- script: dotnet restore
-  displayName: 'dotnet restore'
-
-- script: dotnet build --configuration Release --no-restore
-  displayName: 'dotnet build Release'
-
-- task: Npm@1
-  displayName: 'Run npm install'
-  inputs:
-    verbose: false
-
-- script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output Tailspin.SpaceGame.Web/wwwroot'
-  displayName: 'Compile Sass assets'
-
-- task: gulp@1
-  displayName: 'Run gulp tasks'
-
-- script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
-  displayName: 'Write build info'
-  workingDirectory: Tailspin.SpaceGame.Web/wwwroot
-
+# Restore once (for all projects)
 - task: DotNetCoreCLI@2
   displayName: 'Restore project dependencies'
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
 
+# Build once (Release)
 - task: DotNetCoreCLI@2
   displayName: 'Build the project - Release'
   inputs:
     command: 'build'
-    arguments: '--no-restore --configuration Release'
     projects: '**/*.csproj'
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+
+# Install Node deps (assumes package.json lives in the web project folder)
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    command: 'install'
+    workingDir: 'Tailspin.SpaceGame.Web'
+
+# Compile Sass assets (prefer dart-sass over deprecated node-sass)
+- script: npx --yes sass Tailspin.SpaceGame.Web/wwwroot:Tailspin.SpaceGame.Web/wwwroot
+  displayName: 'Compile Sass assets'
+
+# Run gulp tasks (ensure gulp & gulpfile.js exist in that folder)
+- task: Gulp@1
+  displayName: 'Run gulp tasks'
+  inputs:
+    gulpFile: 'Tailspin.SpaceGame.Web/gulpfile.js'
+    cwd: 'Tailspin.SpaceGame.Web'
+
+# Write build info file into wwwroot
+- script: |
+    echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt
+  displayName: 'Write build info'
+  workingDirectory: 'Tailspin.SpaceGame.Web/wwwroot'
