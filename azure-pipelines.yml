@@ -24,11 +24,12 @@ steps:
 - script: dotnet --info
   displayName: 'Dotnet info (sanity check)'
 
-# Install Node 18 (bypasses agent "npm" demands)
+# Install Node 14 (bypasses agent "npm" demands)
 - task: NodeTool@0
-  displayName: 'Use Node.js 18.x'
+  displayName: 'Use Node.js 14.x'
   inputs:
-    versionSpec: '18.x'
+    versionSpec: '14.x'
+
 
 # Install web deps in the web project folder
 - task: Npm@1
@@ -39,9 +40,9 @@ steps:
     verbose: false
 
 # Compile Sass with dart-sass (pure JS; no native build woes)
-- script: npx sass $(wwwrootDir):$(wwwrootDir)
+- script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
   displayName: 'Compile Sass assets'
-  workingDirectory: 'Tailspin.SpaceGame.Web'
+
 
 # Run gulp tasks if you use gulpfile.js (ensure devDependencies include gulp)
 - task: Gulp@1
