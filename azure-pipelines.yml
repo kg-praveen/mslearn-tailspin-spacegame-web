@@ -48,7 +48,7 @@ steps:
 - task: Gulp@1
   displayName: 'Run gulp tasks'
   inputs:
-    gulpFile: 'Tailspin.SpaceGame.Web/gulpfile.js'
+    gulpFile: 'gulpfile.js'     # or 'gulpfile.cjs' if that’s your file
     cwd: 'Tailspin.SpaceGame.Web'
 
 # Build info into wwwroot
